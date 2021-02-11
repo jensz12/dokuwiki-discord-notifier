@@ -85,7 +85,7 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
             case 'edit minor':
                 $title = $this -> getLang ( 't_minor_upd' );
                 $event_name = $this -> getLang ( 'e_minor_upd' );
-                $embed_color = hexdec ( "00cccc" );
+                $embed_color = hexdec ( "f81472" );
                 break;
             case 'delete':
                 $title = $this -> getLang ( 't_removed' );
