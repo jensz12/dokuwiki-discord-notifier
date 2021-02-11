@@ -3,7 +3,7 @@
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
 class helper_plugin_discordnotifier extends DokuWiki_Plugin {
-    
+
     var $_event = null;
     var $_event_type = array (
         "E" => "edit",
@@ -14,11 +14,11 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
     );
     var $_summary = null;
     var $_payload = null;
-    
+
     public function setPayload($payload){
         $this->_payload = $payload;
     }
-    
+
     public function attic_write ( $filename ) {
         if ( strpos ( $filename, 'data/attic' ) !== false ) {
             return true;
@@ -27,7 +27,7 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
             return false;
         }
     }
-    
+
     public function valid_namespace ( ) {
         global $INFO;
         $validNamespaces = $this -> getConf ( 'namespaces' );
@@ -39,7 +39,7 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
             return true;
         }
     }
-    
+
     public function set_event ( $event ) {
         $this -> _opt = print_r ( $event, true );
         $changeType = $event -> data['changeType'];
@@ -64,13 +64,13 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
             return false;
         }
     }
-    
+
     public function set_payload_text ( $event ) {
         global $conf;
         global $lang;
         global $INFO;
         $event_name = '';
-        $embed_color = hexdec ( "37474f" ); // default value
+        $embed_color = hexdec ( "F81472" ); // default value
         switch ( $this -> _event ) {
             case 'create':
                 $title = $this -> getLang ( 't_created' );
@@ -80,7 +80,7 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
             case 'edit':
                 $title = $this -> getLang ( 't_updated' );
                 $event_name = $this -> getLang ( 'e_updated' );
-                $embed_color = hexdec ( "00cccc" );
+                $embed_color = hexdec ( "f81472" );
                 break;
             case 'edit minor':
                 $title = $this -> getLang ( 't_minor_upd' );
@@ -93,12 +93,12 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
                 $embed_color = hexdec ( "cc0000" );
                 break;
         }
-        
+
         $user = $INFO['userinfo']['name'];
         $link = $this -> _get_url ( $event, null );
         $page = $event -> data['id'];
         $description = "{$user} {$event_name} [__{$page}__]({$link})";
-        
+
         if ( $this -> _event != 'delete' ) {
             $oldRev = $INFO['meta']['last_change']['date'];
             if ( !empty ( $oldRev ) ) {
@@ -106,12 +106,12 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
                 $description .= " \([" . $this -> getLang ( 'compare' ) . "]({$diffURL})\)";
             }
         }
-        
+
         $summary = $this -> _summary;
         if ( ( strpos ( $this -> _event, 'edit' ) !== false ) && $this -> getConf ( 'notify_show_summary' ) ) {
             if ( $summary ) $description .= "\n" . $lang['summary'] . ": " . $summary;
         }
-        
+
         $footer = array ( "text" => "Dokuwiki DiscordNotifier v. 1.1.1" );
         $payload = array ( "embeds" =>
             array (
@@ -120,7 +120,7 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
         );
         $this -> _payload = $payload;
     }
-    
+
     private function _get_url ( $event = null, $Rev ) {
         global $ID;
         global $conf;
@@ -152,13 +152,13 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
         }
         return $url;
     }
-    
+
     public function submit_payload ( ) {
         global $conf;
-        
+
         // init curl
         $ch = curl_init ( $this -> getConf ( 'webhook' ) );
-        
+
         // use proxy if defined
         $proxy = $conf['proxy'];
         if ( !empty ( $proxy['host'] ) ) {
@@ -167,15 +167,15 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
             curl_setopt ( $ch, CURLOPT_PROXY, $proxyAddress );
             curl_setopt ( $ch, CURLOPT_FOLLOWLOCATION, 1 );
             curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
-            
+
             // include username and password if defined
             if ( !empty ( $proxy['user'] ) && !empty ( $proxy['pass'] ) ) {
                 $proxyAuth = $proxy['user'] . ':' . conf_decodeString ( $proxy['port'] );
                 curl_setopt ( $ch, CURLOPT_PROXYUSERPWD, $proxyAuth );
             }
-            
+
         }
-        
+
         // submit payload
         curl_setopt ( $ch, CURLOPT_CUSTOMREQUEST, "POST" );
         $json_payload = json_encode ( $this->_payload );
@@ -184,12 +184,12 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
         curl_setopt ( $ch, CURLOPT_POSTFIELDS, $json_payload );
         curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
         curl_exec ( $ch );
-        
+
         // close curl
         Curl_close ( $ch );
-        
+
     }
-    
+
     public function shouldBeSend($filename){
         $send = true;
         if($this -> attic_write ( $filename )) $send = false;
@@ -198,11 +198,11 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
     }
 
     public function sendUpdate($event) {
-        
+
         if(!($this->shouldBeSend($event -> data['file']) && !$this -> set_event ( $event ))) return ;
         // set payload text
         $this -> set_payload_text ( $event );
-        
+
         // submit payload
         $helper -> submit_payload ( );
     }
