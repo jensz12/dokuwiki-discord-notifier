@@ -13,7 +13,7 @@ $lang['t_removed'] = 'Newly removed';
 
 $lang['e_created'] = 'created the page';
 $lang['e_updated'] = 'updated the page';
-$lang['e_minor_upd'] = ' did a minor update to the page';
+$lang['e_minor_upd'] = 'did a minor update to the page';
 $lang['e_removed'] = 'removed the page';
 
 $lang['compare'] = 'Compare the changes';
